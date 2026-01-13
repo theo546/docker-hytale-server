@@ -8,9 +8,14 @@ This is a fully managed Docker setup for running a Hytale server. It automatical
 
 ## Features
 
-- **Automated Updates**: The container checks for and downloads the latest Hytale server version on every startup.
-- **Auto-Configuration**: Server settings are automatically applied from environment variables to the configuration files.
-- **Managed Authentication**: Credentials and machine identity are persisted automatically.
+### Automated Updates
+The container checks for and downloads the latest Hytale server version on every startup.
+
+### Simple Configuration
+Server settings are automatically mapped from environment variables to the game's configuration files. You don't need to manually edit any JSON files.
+
+### Persistent Authentication
+The setup automatically saves your machine ID to the data directory. This ensures you only need to authenticate once, even if you recreate the container.
 
 ## How to run
 

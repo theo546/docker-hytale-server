@@ -42,7 +42,7 @@ jobs:
         uses: docker/metadata-action@v5
         with:
           images: |
-            ${{ secrets.DOCKERHUB_USERNAME }}/hytale-server
+            ${{ secrets.DOCKERHUB_USERNAME }}/docker-hytale-server
             ghcr.io/${{ github.repository }}
           tags: |
             type=raw,value=latest
@@ -55,3 +55,11 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+
+      - name: Update Docker Hub Description
+        uses: peter-evans/dockerhub-description@v5
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          repository: ${{ secrets.DOCKERHUB_USERNAME }}/docker-hytale-server
+          short-description: ${{ github.event.repository.description }}
