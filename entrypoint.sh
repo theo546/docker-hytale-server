@@ -161,7 +161,6 @@ CONFIG_FILE="$GAME_DIR/hytale/config.json"
 mkdir -p "$(dirname "$CONFIG_FILE")"
 
 # Initialize config if it doesn't exist or is empty
-FIRST_RUN="false"
 if [ ! -s "$CONFIG_FILE" ] || [ "$(cat "$CONFIG_FILE")" == "{}" ]; then
     echo "Initializing configuration..."
     JAR_PATH=$(find "$GAME_DIR/assets" -name "HytaleServer.jar" | head -n 1)
@@ -170,7 +169,6 @@ if [ ! -s "$CONFIG_FILE" ] || [ "$(cat "$CONFIG_FILE")" == "{}" ]; then
         # We pass SERVER_ARGS so that any relevant flags (like --assets) are respected
         (cd "$GAME_DIR/hytale" && java -jar "$JAR_PATH" --generate-schema "${SERVER_ARGS[@]}" >/dev/null 2>&1) || true
     fi
-    FIRST_RUN="true"
 fi
 
 # Configure config.json with environment variables
@@ -215,8 +213,8 @@ if [ -z "$JAR_PATH" ]; then
     exit 1
 fi
 
-if [ "$FIRST_RUN" = "true" ]; then
-    echo "First run detected. Initiating device authentication flow..."
+if [ ! -f "$GAME_DIR/hytale/auth.enc" ]; then
+    echo "No auth.enc found. Initiating device authentication flow..."
     SERVER_ARGS+=("--boot-command" "auth login device")
     SERVER_ARGS+=("--boot-command" "auth persistence Encrypted")
 fi

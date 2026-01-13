@@ -76,12 +76,17 @@ services:
 
 ## How to run
 
-1. Copy the `compose.yml` exemple from above.
-2. Run the server:
+1. Copy the `compose.yml` exemple from above in a dedicated directory.
+2. Create the data directory with the correct permissions:
+   ```bash
+   mkdir data
+   sudo chown 1000:1000 data
+   ```
+3. Run the server:
    ```bash
    docker compose up -d
    ```
-3. Check the logs to authenticate:
+4. Check the logs to authenticate:
    ```bash
    docker compose logs -f
    ```

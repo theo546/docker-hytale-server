@@ -31,6 +31,22 @@ RUN chmod +x /app/entrypoint.sh && chown hytale:hytale /app/entrypoint.sh
 # Set working directory to /server
 WORKDIR /server
 
+# Default environment variables
+ENV HYTALE_BIND=0.0.0.0:5520 \
+    HYTALE_AUTH_MODE=AUTHENTICATED \
+    HYTALE_ALLOW_OP=false \
+    HYTALE_BACKUP_ENABLED=true \
+    HYTALE_BACKUP_DIR=/server/backups \
+    HYTALE_BACKUP_FREQ=30 \
+    HYTALE_ACCEPT_EARLY_PLUGINS=false \
+    HYTALE_PATCHLINE_PRE_RELEASE= \
+    HYTALE_SERVER_NAME="Hytale Server" \
+    HYTALE_SERVER_MOTD= \
+    HYTALE_SERVER_PASSWORD= \
+    HYTALE_SERVER_MAX_PLAYERS=100 \
+    HYTALE_SERVER_MAX_VIEW_RADIUS=32 \
+    HYTALE_SERVER_OWNER_NAME=
+
 # Expose UDP port
 EXPOSE 5520/udp
 
