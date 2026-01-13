@@ -201,6 +201,10 @@ if [ ! -z "$HYTALE_SERVER_MAX_VIEW_RADIUS" ]; then
     jq --argjson v "$HYTALE_SERVER_MAX_VIEW_RADIUS" '.MaxViewRadius = $v' "$CONFIG_FILE" > "$tmp" && mv "$tmp" "$CONFIG_FILE"
 fi
 
+# Force AuthCredentialStore to use encrypted auth with auth.enc
+tmp=$(mktemp)
+jq '.AuthCredentialStore = {"Type": "Encrypted", "Path": "auth.enc"}' "$CONFIG_FILE" > "$tmp" && mv "$tmp" "$CONFIG_FILE"
+
 # Prepare to run the server
 echo 'Starting Hytale Server...'
 mkdir -p "$GAME_DIR/hytale"
