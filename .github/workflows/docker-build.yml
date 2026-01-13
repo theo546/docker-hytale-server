@@ -1,6 +1,11 @@
 name: Build and Push Docker Image
 
 on:
+  push:
+    branches:
+      - 'main'
+    paths-ignore:
+      - '**/README.md'
   schedule:
     # Run at 00:00 every Monday
     - cron: '0 0 * * 1'
@@ -37,6 +42,10 @@ jobs:
         id: date
         run: echo "date=$(date +'%Y-%m-%d-%H-%M')" >> $GITHUB_OUTPUT
 
+      - name: Get build date RFC 3339
+        id: date_rfc3339
+        run: echo "date=$(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> $GITHUB_OUTPUT
+
       - name: Extract metadata (tags, labels) for Docker
         id: meta
         uses: docker/metadata-action@v5
@@ -55,6 +64,10 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
+          build-args: |
+            BUILD_DATE=${{ steps.date_rfc3339.outputs.date }}
+            VCS_REF=${{ github.sha }}
+            VCS_URL=${{ github.repositoryUrl }}
 
       - name: Update Docker Hub Description
         uses: peter-evans/dockerhub-description@v5
