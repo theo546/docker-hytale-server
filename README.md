@@ -1,6 +1,6 @@
 # Hytale Docker Server  
 <p align="center">
-  <img src="logo.svg" width="200" height="200" alt="Hytale Docker Server Logo">
+  <img src="https://raw.githubusercontent.com/theo546/docker-hytale-server/refs/heads/main/logo.svg" width="200" height="200" alt="Hytale Docker Server Logo">
 </p>
 
 
@@ -17,9 +17,66 @@ Server settings are automatically mapped from environment variables to the game'
 ### Persistent Authentication
 The setup automatically saves your machine ID to the data directory. This ensures you only need to authenticate once, even if you recreate the container.
 
+## Quick Start
+
+Ideally, use the `compose.yml` below to get started immediately.
+
+### GitHub Container Registry (Recommended)
+```yaml
+services:
+  hytale-server:
+    image: ghcr.io/theo546/docker-hytale-server:latest
+    restart: always
+    read_only: true
+    volumes:
+      - ./data:/server
+    tmpfs:
+      - /tmp:size=100M,uid=1000,gid=1000,mode=1777,exec
+      - /var/lib/dbus:size=5M,uid=1000,gid=1000,mode=0755
+    ports:
+      - "5520:5520/udp"
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges
+    environment:
+      # Server configuration
+      - HYTALE_BIND=0.0.0.0:5520
+      - HYTALE_AUTH_MODE=AUTHENTICATED
+      - HYTALE_ALLOW_OP=false
+
+      # Backup
+      - HYTALE_BACKUP_ENABLED=true
+      - HYTALE_BACKUP_DIR=/server/backups
+      - HYTALE_BACKUP_FREQ=30
+
+      # Experimental
+      - HYTALE_ACCEPT_EARLY_PLUGINS=false
+
+      # Downloader
+      # Set to "true" to enable pre-release patchline
+      - HYTALE_PATCHLINE_PRE_RELEASE=
+
+      # Game Config
+      - HYTALE_SERVER_NAME=Hytale Server
+      - HYTALE_SERVER_MOTD=
+      - HYTALE_SERVER_PASSWORD=
+      - HYTALE_SERVER_MAX_PLAYERS=100
+      - HYTALE_SERVER_MAX_VIEW_RADIUS=32
+      - HYTALE_SERVER_OWNER_NAME=
+```
+
+### Docker Hub
+```yaml
+services:
+  hytale-server:
+    image: theo546/docker-hytale-server:latest 
+    # ... rest of the configuration is identical
+```
+
 ## How to run
 
-1. Install Docker and Docker Compose.
+1. Copy the `compose.yml` exemple from above.
 2. Run the server:
    ```bash
    docker compose up -d
@@ -67,3 +124,8 @@ All server data (save files, logs, config, and your persistent machine ID) is st
 Hytale servers use a unique "machine ID" to encrypt your login credentials. In a standard Docker environment, this ID changes every time you recreate the container, which would normally force you to re-login after every update.
 
 This setup solves that problem. On the first run, it generates a unique machine ID and saves it to your `data` folder. On every subsequent boot, it injects this saved ID back into the system. This tricks the server into believing it is always running on the same machine, keeping your encrypted credentials valid indefinitely.
+
+## Source Code
+
+This project is open source!  
+**[View on GitHub](https://github.com/theo546/docker-hytale-server)**
