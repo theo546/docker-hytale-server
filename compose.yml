@@ -1,0 +1,41 @@
+services:
+  hytale-server:
+    image: ghcr.io/theo546/hytale-server:latest
+    restart: always
+    read_only: true
+    volumes:
+      - ./data:/server
+    tmpfs:
+      - /tmp:size=100M,uid=1000,gid=1000,mode=1777,exec
+      - /var/lib/dbus:uid=1000,gid=1000,mode=0755
+    ports:
+      - "5520:5520/udp"
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges
+    environment:
+      # Server configuration
+      - HYTALE_BIND=0.0.0.0:5520
+      - HYTALE_AUTH_MODE=AUTHENTICATED
+      - HYTALE_ALLOW_OP=false
+
+      # Backup
+      - HYTALE_BACKUP_ENABLED=true
+      - HYTALE_BACKUP_DIR=/server/backups
+      - HYTALE_BACKUP_FREQ=30
+
+      # Experimental
+      - HYTALE_ACCEPT_EARLY_PLUGINS=false
+
+      # Downloader
+      # Set to "true" to enable pre-release patchline
+      - HYTALE_PATCHLINE_PRE_RELEASE=
+
+      # Game Config
+      - HYTALE_SERVER_NAME=Hytale Server
+      - HYTALE_SERVER_MOTD=
+      - HYTALE_SERVER_PASSWORD=
+      - HYTALE_SERVER_MAX_PLAYERS=100
+      - HYTALE_SERVER_MAX_VIEW_RADIUS=32
+      - HYTALE_SERVER_OWNER_NAME=

@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" shape-rendering="crispEdges">
+  <!-- Definitions for gradients and effects -->
+  <defs>
+    <linearGradient id="stoneGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#4a5d6e;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#2a3640;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="bladeGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#cfd8dc;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#eceff1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#b0bec5;stop-opacity:1" />
+    </linearGradient>
+    <filter id="innerGlow">
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background Shield Shape (Pixelated) -->
+  <path d="M 64,64 L 448,64 L 448,192 Q 448,384 256,480 Q 64,384 64,192 Z" fill="#1d252d" stroke="#12171c" stroke-width="16" />
+  
+  <!-- Inner Shield Border (Stone style) -->
+  <path d="M 80,80 L 432,80 L 432,192 Q 432,368 256,464 Q 80,368 80,192 Z" fill="none" stroke="url(#stoneGradient)" stroke-width="16" stroke-dasharray="16 16" />
+
+  <!-- The "D" Shape Construction -->
+  
+  <!-- 1. The Sword (Vertical Stem of the D) -->
+  <!-- Pommel -->
+  <rect x="112" y="64" width="64" height="32" fill="#546e7a" />
+  <rect x="128" y="48" width="32" height="16" fill="#37474f" />
+  
+  <!-- Hilt/Crossguard -->
+  <rect x="96" y="96" width="96" height="32" fill="#455a64" rx="4" />
+  <rect x="136" y="96" width="16" height="32" fill="#78909c" /> <!-- highlight -->
+  
+  <!-- Blade (The vertical bar) -->
+  <rect x="112" y="128" width="64" height="288" fill="url(#bladeGradient)" />
+  <!-- Blade Fuller (Groove) with Runic Glow -->
+  <rect x="136" y="128" width="16" height="272" fill="#2496ed" filter="url(#innerGlow)" opacity="0.8">
+    <animate attributeName="opacity" values="0.6;0.9;0.6" dur="3s" repeatCount="indefinite" />
+  </rect>
+  <!-- Blade Point -->
+  <path d="M 112,416 L 144,464 L 176,416 Z" fill="url(#bladeGradient)" />
+  <path d="M 136,400 L 144,448 L 152,400 Z" fill="#2496ed" opacity="0.8" />
+
+  <!-- 2. The Curve of the D (Made of Docker Containers) -->
+  
+  <!-- Top Stack Container -->
+  <g transform="translate(192, 112)">
+    <rect x="0" y="0" width="160" height="64" fill="#0db7ed" stroke="#005c99" stroke-width="4" />
+    <rect x="16" y="16" width="128" height="32" fill="none" stroke="#fff" stroke-width="4" stroke-opacity="0.3" stroke-dasharray="16 8"/>
+    <!-- Connection to sword -->
+    <rect x="-16" y="16" width="16" height="32" fill="#005c99" /> 
+  </g>
+
+  <!-- Middle Right Container (The Curve) -->
+  <g transform="translate(320, 192)">
+    <rect x="0" y="0" width="64" height="128" fill="#0076a8" stroke="#003f5c" stroke-width="4" />
+    <rect x="16" y="16" width="32" height="96" fill="none" stroke="#fff" stroke-width="4" stroke-opacity="0.3" />
+  </g>
+
+  <!-- Bottom Stack Container -->
+  <g transform="translate(192, 336)">
+    <rect x="0" y="0" width="160" height="64" fill="#0db7ed" stroke="#005c99" stroke-width="4" />
+    <rect x="16" y="16" width="128" height="32" fill="none" stroke="#fff" stroke-width="4" stroke-opacity="0.3" stroke-dasharray="16 8"/>
+    <!-- Connection to sword -->
+    <rect x="-16" y="16" width="16" height="32" fill="#005c99" />
+  </g>
+
+  <!-- Connecting Blocks for pixelated smoothness -->
+  <rect x="336" y="160" width="32" height="32" fill="#0076a8" />
+  <rect x="336" y="320" width="32" height="32" fill="#0076a8" />
+
+  <!-- Cracks/Details on the stone border -->
+  <path d="M 96,120 L 110,130" stroke="#000" stroke-width="4" opacity="0.3" />
+  <path d="M 432,300 L 410,310" stroke="#000" stroke-width="4" opacity="0.3" />
+
+</svg>
