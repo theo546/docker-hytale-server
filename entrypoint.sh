@@ -105,8 +105,6 @@ while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
             log_warn "Invalid credentials detected ($line)."
             rm -f "$GAME_DIR/.hytale-downloader-credentials.json"
             SHOULD_RETRY=true
-        fi
-
         # Check for network/server errors
         elif [[ "$line" == *"Client.Timeout"* ]] || [[ "$line" == *"error fetching server manifest"* ]] || [[ "$line" == *"request canceled"* ]]; then
              log_warn "Network/API error detected: $line"
