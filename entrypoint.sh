@@ -64,7 +64,7 @@ else
     log_info "Hytale Downloader CLI is up-to-date."
 fi
 
-# Download/Update Game
+# Download/update Game
 log_info "Checking for Hytale Server updates..."
 PATCHLINE_ARG=""
 if [ ! -z "$HYTALE_PATCHLINE_PRE_RELEASE" ]; then
@@ -100,18 +100,18 @@ while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
              log_warn "${BASH_REMATCH[0]}"
         fi
         
-        # Check for Invalid Credentials
+        # Check for invalid credentials error
         if [[ "$line" == *"403"* ]] || [[ "$line" == *"invalid_grant"* ]]; then
             log_warn "Invalid credentials detected ($line)."
             rm -f "$GAME_DIR/.hytale-downloader-credentials.json"
             SHOULD_RETRY=true
         fi
 
-        # Check for Network/Server Errors
-        if [[ "$line" == *"Client.Timeout"* ]] || [[ "$line" == *"error fetching server manifest"* ]] || [[ "$line" == *"request canceled"* ]]; then
+        # Check for network/server errors
+        elif [[ "$line" == *"Client.Timeout"* ]] || [[ "$line" == *"error fetching server manifest"* ]] || [[ "$line" == *"request canceled"* ]]; then
              log_warn "Network/API error detected: $line"
              SHOULD_RETRY=true
-             sleep 5
+             sleep 2
         fi
     done < <($CLI_EXECUTABLE -print-version $PATCHLINE_ARG 2>&1)
     
@@ -129,7 +129,7 @@ done
 EXIT_CODE=0 
 if [ -z "$OUTPUT" ]; then EXIT_CODE=1; fi
 
-# Extract version from output (Last non-empty line)
+# Extract version from output (last non-empty line)
 REMOTE_VERSION=$(echo "$OUTPUT" | awk 'NF' | tail -n 1 | tr -d '\r')
     
 NEEDS_UPDATE=false
@@ -371,7 +371,7 @@ TOKEN_ERROR_COUNT=0
 # Tail the log file
 while IFS= read -r line; do
     
-    # 1. Output Logic
+    # 1. Output logic
     if [ "$STREAM_LOGS" = "true" ]; then
         if [[ "$line" == *"WARN"* ]]; then
             printf "\033[33m%s\033[0m\n" "$line"
@@ -382,7 +382,7 @@ while IFS= read -r line; do
         fi
     fi
     
-    # 2. Global Error Checks (Active in all modes)
+    # 2. Global error checks (active in all modes)
     if [[ "$line" == *"No server tokens configured"* ]]; then
         TOKEN_ERROR_COUNT=$((TOKEN_ERROR_COUNT+1))
         
@@ -404,7 +404,7 @@ while IFS= read -r line; do
          exit 1
     fi
     
-    # 3. Auth Flow Logic (Only if not streaming yet)
+    # 3. Auth flow logic (only if not streaming yet)
     if [ "$STREAM_LOGS" = "false" ]; then
         # Wait for boot
         if [ "$BOOTED" = "false" ]; then
@@ -420,7 +420,7 @@ while IFS= read -r line; do
                  log_warn "${BASH_REMATCH[0]}"
             fi
             
-            # Check for Auth Timeout Announcement
+            # Check for auth timeout announcement
             if [[ "$line" =~ Waiting\ for\ authorization\ \(expires\ in\ ([0-9]+)\ seconds\)\.\.\. ]]; then
                 TIMEOUT_SEC="${BASH_REMATCH[1]}"
                 
