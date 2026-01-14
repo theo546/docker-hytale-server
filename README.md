@@ -91,25 +91,25 @@ Configure the server by editing the `compose.yml` file.
 
 | Variable | Description | Default |
 |----------|-------------|---------|
+| HYTALE_ACCEPT_EARLY_PLUGINS | Allow early plugins | false |
+| HYTALE_ALLOW_OP | Enable operator commands | false |
+| HYTALE_AUTH_MODE | Authentication mode (AUTHENTICATED/OFFLINE/INSECURE) | AUTHENTICATED |
+| HYTALE_BACKUP_DIR | Directory to store backups | /server/backups |
+| HYTALE_BACKUP_ENABLED | Enable automatic backups | true |
 | HYTALE_BACKUP_FREQ | Frequency of backups in minutes | 30 |
-| HYTALE_BACKUP_MAX_COUNT | Maxiumum number of backups to keep | 5 |
+| HYTALE_BACKUP_MAX_COUNT | Maximum number of backups to keep | 5 |
+| HYTALE_BIND | Port binding | 0.0.0.0:5520 |
 | HYTALE_DISABLE_SENTRY | Disable Sentry reporting | false |
+| HYTALE_IDENTITY_TOKEN | Identity Token (JWT) | (empty) |
 | HYTALE_PATCHLINE_PRE_RELEASE | Set to "true" to download pre-release version | (empty) |
-| HYTALE_SERVER_NAME | Server name | Hytale Server |
-| HYTALE_SERVER_MOTD | Message of the day | (empty) |
 | HYTALE_SERVER_MAX_PLAYERS | Maximum player count | 100 |
 | HYTALE_SERVER_MAX_VIEW_RADIUS | View distance in chunks | 32 |
+| HYTALE_SERVER_MOTD | Message of the day | (empty) |
+| HYTALE_SERVER_NAME | Server name | Hytale Server |
 | HYTALE_SERVER_OWNER_NAME | Owner name | (empty) |
 | HYTALE_SERVER_OWNER_UUID | Owner UUID | (empty) |
-| HYTALE_IDENTITY_TOKEN | Identity Token (JWT) | (empty) |
+| HYTALE_SERVER_PASSWORD | Server password | (empty) |
 | HYTALE_SESSION_TOKEN | Session Token | (empty) |
-| HYTALE_AUTH_MODE | Authentication mode (AUTHENTICATED/OFFLINE/INSECURE) | AUTHENTICATED |
-| HYTALE_BIND | Port binding | 0.0.0.0:5520 |
-| HYTALE_ALLOW_OP | Enable operator commands | false |
-| HYTALE_BACKUP_ENABLED | Enable automatic backups | true |
-| HYTALE_BACKUP_DIR | Directory to store backups | /server/backups |
-| HYTALE_ACCEPT_EARLY_PLUGINS | Allow early plugins | false |
-| HYTALE_PATCHLINE_PRE_RELEASE | Set to "true" to download pre-release versions | (empty) |
 
 ## Data Storage
 
