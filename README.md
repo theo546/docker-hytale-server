@@ -1,21 +1,7 @@
-# Hytale Docker Server  
 <p align="center">
-  <img src="https://raw.githubusercontent.com/theo546/docker-hytale-server/refs/heads/main/logo.svg" width="200" height="200" alt="Hytale Docker Server Logo">
+  <img src="https://raw.githubusercontent.com/theo546/docker-hytale-server/refs/heads/main/logo.svg" height="125" alt="Docker Hytale Server Logo"><br>
+  A Docker setup for running a Hytale server. Dead simple. Downloads, updates, authentication, configuration, it just handles all of it. You point it at a directory, run it, and it works.
 </p>
-
-
-This is a fully managed Docker setup for running a Hytale server. It automatically handles game updates, configuration management, and authentication persistence.
-
-## Features
-
-### Automated Updates
-The container checks for and downloads the latest Hytale server version on every startup.
-
-### Simple Configuration
-Server settings are automatically mapped from environment variables to the game's configuration files. You don't need to manually edit any JSON files.
-
-### Persistent Authentication
-The setup automatically saves your machine ID to the data directory. This ensures you only need to authenticate once, even if you recreate the container.
 
 ## Quick Start
 
@@ -92,7 +78,7 @@ services:
    ```
    You will need to authenticate twice:
    1. First, when the system downloads the game assets.
-   2. Second, when the Game Server starts up and connects to the session service.
+   2. Second, when the game server starts up and connects to the session service.
 
    Look for a log line containing a URL like this:
    `https://oauth.accounts.hytale.com/oauth2/device/verify?user_code=AAAAAAAA`
@@ -105,18 +91,23 @@ Configure the server by editing the `compose.yml` file.
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| HYTALE_SERVER_NAME | Display name of the server | Hytale Server |
-| HYTALE_SERVER_OWNER_NAME | Account name of the server admin | (empty) |
-| HYTALE_SERVER_PASSWORD | Server password (leave empty for none) | (empty) |
+| HYTALE_BACKUP_FREQ | Frequency of backups in minutes | 30 |
+| HYTALE_BACKUP_MAX_COUNT | Maxiumum number of backups to keep | 5 |
+| HYTALE_DISABLE_SENTRY | Disable Sentry reporting | false |
+| HYTALE_PATCHLINE_PRE_RELEASE | Set to "true" to download pre-release version | (empty) |
+| HYTALE_SERVER_NAME | Server name | Hytale Server |
 | HYTALE_SERVER_MOTD | Message of the day | (empty) |
 | HYTALE_SERVER_MAX_PLAYERS | Maximum player count | 100 |
 | HYTALE_SERVER_MAX_VIEW_RADIUS | View distance in chunks | 32 |
-| HYTALE_AUTH_MODE | Authentication mode (AUTHENTICATED/OFFLINE) | AUTHENTICATED |
+| HYTALE_SERVER_OWNER_NAME | Owner name | (empty) |
+| HYTALE_SERVER_OWNER_UUID | Owner UUID | (empty) |
+| HYTALE_IDENTITY_TOKEN | Identity Token (JWT) | (empty) |
+| HYTALE_SESSION_TOKEN | Session Token | (empty) |
+| HYTALE_AUTH_MODE | Authentication mode (AUTHENTICATED/OFFLINE/INSECURE) | AUTHENTICATED |
 | HYTALE_BIND | Port binding | 0.0.0.0:5520 |
 | HYTALE_ALLOW_OP | Enable operator commands | false |
 | HYTALE_BACKUP_ENABLED | Enable automatic backups | true |
 | HYTALE_BACKUP_DIR | Directory to store backups | /server/backups |
-| HYTALE_BACKUP_FREQ | Backup frequency in minutes | 30 |
 | HYTALE_ACCEPT_EARLY_PLUGINS | Allow early plugins | false |
 | HYTALE_PATCHLINE_PRE_RELEASE | Set to "true" to download pre-release versions | (empty) |
 
