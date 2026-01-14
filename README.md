@@ -40,7 +40,7 @@ services:
       - HYTALE_ACCEPT_EARLY_PLUGINS=false
 
       # Downloader
-      # Set to "true" to enable pre-release patchline
+      # Patchline to use (e.g. "pre-release")
       - HYTALE_PATCHLINE_PRE_RELEASE=
 
       # Game Config
@@ -101,7 +101,7 @@ Configure the server by editing the `compose.yml` file.
 | HYTALE_BIND | Port binding | 0.0.0.0:5520 |
 | HYTALE_DISABLE_SENTRY | Disable Sentry reporting | false |
 | HYTALE_IDENTITY_TOKEN | Identity Token (JWT) | (empty) |
-| HYTALE_PATCHLINE_PRE_RELEASE | Set to "true" to download pre-release version | (empty) |
+| HYTALE_PATCHLINE_PRE_RELEASE | Patchline to download (e.g. "pre-release") | (empty) |
 | HYTALE_SERVER_MAX_PLAYERS | Maximum player count | 100 |
 | HYTALE_SERVER_MAX_VIEW_RADIUS | View distance in chunks | 32 |
 | HYTALE_SERVER_MOTD | Message of the day | (empty) |

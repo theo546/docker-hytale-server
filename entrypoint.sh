@@ -68,7 +68,7 @@ fi
 log_info "Checking for Hytale Server updates..."
 PATCHLINE_ARG=""
 if [ ! -z "$HYTALE_PATCHLINE_PRE_RELEASE" ]; then
-    PATCHLINE_ARG="-patchline pre-release"
+    PATCHLINE_ARG="-patchline $HYTALE_PATCHLINE_PRE_RELEASE"
 fi
 
 VERSION_FILE="$GAME_DIR/assets/installed_version.txt"
@@ -148,7 +148,7 @@ if [ "$NEEDS_UPDATE" = "true" ]; then
     # Determine patchline name for logging
     PATCHLINE_NAME="release"
     if [ ! -z "$HYTALE_PATCHLINE_PRE_RELEASE" ]; then
-        PATCHLINE_NAME="pre-release"
+        PATCHLINE_NAME="$HYTALE_PATCHLINE_PRE_RELEASE"
     fi
 
     # Run downloader silently with custom log
@@ -365,6 +365,7 @@ log_info "Monitoring log file: $LOG_FILE"
 
 BOOTED=false
 TOKEN_ERROR_COUNT=0
+COLLECTING_PROFILES=false
 
 # Tail the log file
 while IFS= read -r line; do
@@ -429,6 +430,30 @@ while IFS= read -r line; do
                     kill -SIGTERM "$SERVER_PID"
                 ) &
                 AUTH_TIMEOUT_PID=$!
+            fi
+            
+            # Check for invalid owner UUID/name
+            if [[ "$line" == *"not found in available profiles"* ]]; then
+                log_warn "Authentication successful, but the owner UUID or name you specified is invalid."
+                log_warn "Please check your HYTALE_SERVER_OWNER_UUID or HYTALE_SERVER_OWNER_NAME environment variable."
+                COLLECTING_PROFILES=true
+            fi
+            
+            # Collect and display available profiles
+            if [ "$COLLECTING_PROFILES" = "true" ]; then
+                if [[ "$line" =~ \[([0-9]+)\]\ ([^\ ]+)\ \(([a-f0-9-]+)\) ]]; then
+                    log_info "Available profile: ${BASH_REMATCH[2]} (UUID: ${BASH_REMATCH[3]})"
+                fi
+                
+                # Exit after profiles are displayed (next line won't match the pattern)
+                if [[ "$line" == *"Multiple profiles available"* ]] || [[ "$line" =~ \[([0-9]+)\]\ ([^\ ]+)\ \(([a-f0-9-]+)\) ]]; then
+                    : # Still collecting
+                elif [ "$COLLECTING_PROFILES" = "true" ]; then
+                    log_severe "Exiting due to invalid owner configuration. Please update your environment variables and restart."
+                    kill -SIGTERM "$SERVER_PID"
+                    wait "$SERVER_PID"
+                    exit 1
+                fi
             fi
             
             # Check for success
