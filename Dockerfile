@@ -4,7 +4,7 @@ FROM eclipse-temurin:25-jdk-alpine AS jre-builder
 
 # Create minimal JRE with modules needed by Hytale server
 RUN $JAVA_HOME/bin/jlink \
-    --add-modules java.base,java.desktop,java.logging,java.management,java.naming,java.net.http,jdk.management,jdk.net,jdk.unsupported,jdk.zipfs \
+    --add-modules java.base,java.desktop,java.naming,java.net.http,jdk.management,jdk.net,jdk.unsupported,jdk.zipfs \
     --strip-debug \
     --no-man-pages \
     --no-header-files \
@@ -65,28 +65,33 @@ LABEL org.label-schema.schema-version="1.0" \
     org.label-schema.vcs-url="${VCS_URL}" \
     org.label-schema.vcs-ref="${VCS_REF}"
 
+# CurseForge API Key
+ARG CF_API_KEY
+ENV CF_API_KEY=${CF_API_KEY}
+
 # Set working directory
 WORKDIR /server
 
 # Default environment variables
-ENV HYTALE_BIND=0.0.0.0:5520 \
-    HYTALE_AUTH_MODE=AUTHENTICATED \
+ENV HYTALE_ACCEPT_EARLY_PLUGINS=false \
     HYTALE_ALLOW_OP=false \
-    HYTALE_BACKUP_ENABLED=true \
+    HYTALE_AUTH_MODE=AUTHENTICATED \
     HYTALE_BACKUP_DIR=/server/backups \
+    HYTALE_BACKUP_ENABLED=true \
     HYTALE_BACKUP_FREQ=30 \
     HYTALE_BACKUP_MAX_COUNT=5 \
-    HYTALE_ACCEPT_EARLY_PLUGINS=false \
+    HYTALE_BIND=0.0.0.0:5520 \
+    HYTALE_CURSEFORGE_MODS= \
     HYTALE_DISABLE_SENTRY=false \
+    HYTALE_IDENTITY_TOKEN= \
     HYTALE_PATCHLINE_PRE_RELEASE= \
-    HYTALE_SERVER_NAME="Hytale Server" \
-    HYTALE_SERVER_MOTD= \
-    HYTALE_SERVER_PASSWORD= \
     HYTALE_SERVER_MAX_PLAYERS=100 \
     HYTALE_SERVER_MAX_VIEW_RADIUS=32 \
+    HYTALE_SERVER_MOTD= \
+    HYTALE_SERVER_NAME="Hytale Server" \
     HYTALE_SERVER_OWNER_NAME= \
     HYTALE_SERVER_OWNER_UUID= \
-    HYTALE_IDENTITY_TOKEN= \
+    HYTALE_SERVER_PASSWORD= \
     HYTALE_SESSION_TOKEN=
 
 # Expose UDP port

@@ -1,6 +1,6 @@
 <p align="center">
   <img src="https://raw.githubusercontent.com/theo546/docker-hytale-server/refs/heads/main/logo.svg" height="125" alt="Docker Hytale Server Logo"><br>
-  A Docker setup for running a Hytale server. Dead simple. Downloads, updates, authentication, configuration, it just handles all of it. You point it at a directory, run it, and it works.
+  A Docker setup for running a Hytale server. Dead simple. Downloads, updates, auto-installs & updates mods, authentication, configuration, it just handles all of it. You point it at a directory, run it, and it works.
 </p>
 
 ## Quick Start
@@ -30,6 +30,7 @@ services:
       - HYTALE_BIND=0.0.0.0:5520
       - HYTALE_AUTH_MODE=AUTHENTICATED
       - HYTALE_ALLOW_OP=false
+      - HYTALE_CURSEFORGE_MODS=
 
       # Backup
       - HYTALE_BACKUP_ENABLED=true
@@ -51,6 +52,7 @@ services:
       - HYTALE_SERVER_MAX_VIEW_RADIUS=32
       - HYTALE_SERVER_OWNER_NAME=
 ```
+[View package on GitHub Container Registry](https://github.com/theo546/docker-hytale-server/pkgs/container/docker-hytale-server)
 
 ### Docker Hub
 ```yaml
@@ -59,8 +61,9 @@ services:
     image: theo546/docker-hytale-server:latest 
     # ... rest of the configuration is identical
 ```
+[View image on Docker Hub](https://hub.docker.com/r/theo546/docker-hytale-server)
 
-## How to run
+## How to Run
 
 1. Copy the `compose.yml` exemple from above in a dedicated directory.
 2. Create the data directory with the correct permissions:
@@ -99,6 +102,7 @@ Configure the server by editing the `compose.yml` file.
 | HYTALE_BACKUP_FREQ | Frequency of backups in minutes | 30 |
 | HYTALE_BACKUP_MAX_COUNT | Maximum number of backups to keep | 5 |
 | HYTALE_BIND | Port binding | 0.0.0.0:5520 |
+| HYTALE_CURSEFORGE_MODS | Comma-separated list of mod slugs (e.g. `eliteessentials,advanced-item-info`) | (empty) |
 | HYTALE_DISABLE_SENTRY | Disable Sentry reporting | false |
 | HYTALE_IDENTITY_TOKEN | Identity Token (JWT) | (empty) |
 | HYTALE_PATCHLINE_PRE_RELEASE | Patchline to download (e.g. "pre-release") | (empty) |

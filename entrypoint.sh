@@ -27,6 +27,11 @@ CACHE_FILE="$DOWNLOADER_DIR/cache.txt"
 GAME_DIR="/server"
 CLI_EXECUTABLE="$DOWNLOADER_DIR/hytale-downloader-linux-amd64"
 
+# CurseForge Constants
+# CF_API_KEY is injected via env
+CF_API_BASE="https://api.curseforge.com"
+CF_GAME_ID="70216"
+
 # Ensure directories exist
 mkdir -p "$DOWNLOADER_DIR"
 
@@ -178,6 +183,128 @@ if [ "$NEEDS_UPDATE" = "true" ]; then
         log_severe "Error: game.zip not found after download attempt."
         exit 1
     fi
+fi
+
+# Handle Mod Downloads
+if [ ! -z "$HYTALE_CURSEFORGE_MODS" ]; then
+    log_info "Processing CurseForge mods..."
+    
+    # Define directories
+    MODS_DIR="$GAME_DIR/hytale/mods"
+    VERSIONS_DIR="$MODS_DIR/.versions"
+    
+    # Create versions directory if it doesn't exist
+    mkdir -p "$VERSIONS_DIR"
+    
+    # Split slugs by comma
+    IFS=',' read -ra SLUGS <<< "$HYTALE_CURSEFORGE_MODS"
+    
+    for slug in "${SLUGS[@]}"; do
+        # Trim whitespace
+        slug=$(echo "$slug" | xargs)
+        if [ -z "$slug" ]; then continue; fi
+        
+        log_info "Processing mod: $slug"
+        
+        # 1. Search for mod
+        SEARCH_RES=$(curl -s -H "x-api-key: $CF_API_KEY" "$CF_API_BASE/v1/mods/search?gameId=$CF_GAME_ID&slug=$slug")
+        
+        # Validate output is JSON
+        if ! echo "$SEARCH_RES" | jq -e . >/dev/null 2>&1; then
+            log_severe "Error: Invalid JSON response checking mod '$slug'. Raw: $SEARCH_RES"
+            exit 1
+        fi
+        
+        MOD_ID=$(echo "$SEARCH_RES" | jq -r '.data[0].id // empty')
+        
+        if [ -z "$MOD_ID" ]; then
+             log_severe "Error: Mod not found: $slug"
+             exit 1
+        fi
+        
+        # 2. Get latest file
+        FILES_RES=$(curl -s -H "x-api-key: $CF_API_KEY" "$CF_API_BASE/v1/mods/$MOD_ID/files?pageSize=1&sortOrder=desc")
+        
+        # Check for API errors
+        if echo "$FILES_RES" | jq -e '.errorCode' > /dev/null 2>&1; then
+            ERROR_MSG=$(echo "$FILES_RES" | jq -r '.errorMessage // "Unknown API error"')
+            log_severe "API Error for $slug: $ERROR_MSG"
+            exit 1
+        fi
+        
+        FILE_ID=$(echo "$FILES_RES" | jq -r '.data[0].id // empty')
+        if [ -z "$FILE_ID" ]; then
+            log_severe "Error: No files found for mod: $slug"
+            exit 1
+        fi
+        
+        FILE_NAME=$(echo "$FILES_RES" | jq -r '.data[0].fileName')
+        DOWNLOAD_URL=$(echo "$FILES_RES" | jq -r '.data[0].downloadUrl // empty')
+        FILE_SIZE=$(echo "$FILES_RES" | jq -r '.data[0].fileLength')
+        
+        if [ -z "$DOWNLOAD_URL" ] || [ "$DOWNLOAD_URL" = "null" ]; then
+             # Fetch download URL explicitly if missing
+             URL_RES=$(curl -s -H "x-api-key: $CF_API_KEY" "$CF_API_BASE/v1/mods/$MOD_ID/files/$FILE_ID/download-url")
+             DOWNLOAD_URL=$(echo "$URL_RES" | jq -r '.data // empty')
+             
+             if [ -z "$DOWNLOAD_URL" ] || [ "$DOWNLOAD_URL" = "null" ]; then
+                 log_severe "Error: Could not determine download URL for $slug"
+                 exit 1
+             fi
+        fi
+        
+        # 3. Check installed version
+        VERSION_FILE="$VERSIONS_DIR/$slug.txt"
+        INSTALLED_FILE_ID=""
+        INSTALLED_FILE_NAME=""
+        if [ -f "$VERSION_FILE" ]; then
+            INSTALLED_FILE_ID=$(grep "^file_id=" "$VERSION_FILE" | cut -d'=' -f2)
+            INSTALLED_FILE_NAME=$(grep "^file_name=" "$VERSION_FILE" | cut -d'=' -f2)
+        fi
+        
+        # Check if file exists
+        FILE_EXISTS=false
+        if [ ! -z "$INSTALLED_FILE_NAME" ] && [ -f "$MODS_DIR/$INSTALLED_FILE_NAME" ]; then
+            FILE_EXISTS=true
+        fi
+        
+        if [ "$FILE_ID" == "$INSTALLED_FILE_ID" ] && [ "$FILE_EXISTS" == "true" ]; then
+            log_info "Mod $slug is up-to-date."
+            continue
+        fi
+        
+        # 4. Download
+        log_info "Downloading $FILE_NAME..."
+        
+        # Remove old version if exists
+        OLD_FILENAME=""
+        if [ -f "$VERSION_FILE" ]; then
+            OLD_FILENAME=$(grep "^file_name=" "$VERSION_FILE" | cut -d'=' -f2)
+            if [ ! -z "$OLD_FILENAME" ] && [ -f "$MODS_DIR/$OLD_FILENAME" ]; then
+                rm "$MODS_DIR/$OLD_FILENAME"
+            fi
+        fi
+        
+        if ! curl -L -s -o "$MODS_DIR/$FILE_NAME" "$DOWNLOAD_URL"; then
+             log_severe "Error: Failed to download $slug"
+             exit 1
+        fi
+        
+        # Verify size
+        ACTUAL_SIZE=$(stat -c%s "$MODS_DIR/$FILE_NAME" 2>/dev/null || stat -f%z "$MODS_DIR/$FILE_NAME" 2>/dev/null)
+        if [ ! -z "$FILE_SIZE" ] && [ "$FILE_SIZE" != "null" ]; then
+            if [ "$ACTUAL_SIZE" -ne "$FILE_SIZE" ]; then
+                log_severe "Error: File size mismatch for $slug. Expected $FILE_SIZE, got $ACTUAL_SIZE."
+                exit 1
+            fi
+        fi
+        
+        # Save version
+        echo "file_name=$FILE_NAME" > "$VERSION_FILE"
+        echo "file_id=$FILE_ID" >> "$VERSION_FILE"
+        
+        log_info "Mod $slug installed/updated."
+    done
 fi
 
 # Construct server arguments
@@ -456,6 +583,14 @@ while IFS= read -r line; do
                 fi
             fi
             
+            # Check for timeout
+            if [[ "$line" == *"HTTP connect timed out"* ]]; then
+                log_warn "Authentication timed out (HTTP timeout). Restarting..."
+                kill -SIGTERM "$SERVER_PID"
+                wait "$SERVER_PID"
+                exit 1
+            fi
+
             # Check for success
             if [[ "$line" == *"Authentication successful"* ]]; then
                 log_info "Authentication successful! Streaming logs..."

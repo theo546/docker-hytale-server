@@ -65,6 +65,7 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
+            CF_API_KEY=${{ secrets.CF_API_KEY }}
             BUILD_DATE=${{ steps.date_rfc3339.outputs.date }}
             VCS_REF=${{ github.sha }}
             VCS_URL=${{ github.repositoryUrl }}
