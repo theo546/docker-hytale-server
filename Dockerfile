@@ -1,37 +1,56 @@
-# Use eclipse-temurin as base image
-FROM eclipse-temurin:25-jdk
+# Multi-stage Hytale Server
+# Stage 1: Build custom minimal JRE using jlink
+FROM eclipse-temurin:25-jdk-alpine AS jre-builder
 
-# Install dependencies
-RUN apt-get update && apt-get install -y \
-    curl \
-    jq \
-    unzip \
-    dbus \
-    && rm -rf /var/lib/apt/lists/*
+# Create minimal JRE with modules needed by Hytale server
+RUN $JAVA_HOME/bin/jlink \
+    --add-modules java.base,java.desktop,java.logging,java.management,java.naming,java.net.http,jdk.management,jdk.net,jdk.unsupported,jdk.zipfs \
+    --strip-debug \
+    --no-man-pages \
+    --no-header-files \
+    --compress=zip-9 \
+    --dedup-legal-notices=error-if-not-same-content \
+    --output /custom-jre
 
-# Create hytale user and group with specific UID
-RUN if getent passwd 1000; then userdel -f $(getent passwd 1000 | cut -d: -f1); fi && \
-    if getent group 1000; then groupdel $(getent group 1000 | cut -d: -f1); fi && \
-    groupadd -g 1000 hytale && \
-    useradd -u 1000 -g hytale -s /bin/bash -m hytale
+# Manually strip native libraries and remove unused desktop libs
+RUN find /custom-jre/lib -name "*.so" -exec strip -p --strip-unneeded {} \; && \
+    rm -f \
+    /custom-jre/lib/libfontmanager.so \
+    /custom-jre/lib/libjavajpeg.so \
+    /custom-jre/lib/liblcms.so \
+    /custom-jre/lib/libfreetype.so \
+    /custom-jre/lib/libmlib_image.so
 
-# Create server directory and set permissions
-RUN mkdir -p /server && chown -R hytale:hytale /server
+# Stage 2: Final runtime image (Alpine for shell/tools support)
+FROM alpine:edge
 
-# Prepare /var/lib/dbus for runtime persistence (writable by hytale user)
-RUN mkdir -p /var/lib/dbus && chown -R hytale:hytale /var/lib/dbus
+# Install runtime dependencies and tools, then remove package manager
+RUN apk add --no-cache \
+    libc6-compat libstdc++ \
+    curl jq unzip dbus bash coreutils \
+    && rm -rf /sbin/apk /etc/apk /lib/apk /usr/share/apk /var/cache/apk/* /usr/lib/libapk.so*
 
-# Create script directory
-RUN mkdir -p /app
+# Create hytale user with UID/GID 1000
+RUN adduser -D -u 1000 -h /home/hytale hytale
+
+# Copy custom JRE from builder stage
+COPY --from=jre-builder /custom-jre /opt/java
+
+# Set environment variables
+ENV JAVA_HOME=/opt/java \
+    PATH="/opt/java/bin:$PATH"
+
+# Create server and app directories with correct permissions
+RUN mkdir -p /server /app /var/lib/dbus && \
+    chown -R hytale:hytale /server /app /var/lib/dbus
 
 # Copy entrypoint script
-COPY entrypoint.sh /app/entrypoint.sh
-RUN chmod +x /app/entrypoint.sh && chown hytale:hytale /app/entrypoint.sh
+COPY --chown=hytale:hytale --chmod=0755 entrypoint.sh /app/entrypoint.sh
 
-# Label the image
-LABEL maintainer="theo546"
-LABEL author="theo546"
-LABEL description="An easy to use Hytale server for Docker!"
+# Labels
+LABEL maintainer="theo546" \
+    author="theo546" \
+    description="An easy to use Hytale server for Docker!"
 
 ARG BUILD_DATE=""
 ARG VCS_REF=""
@@ -44,10 +63,9 @@ LABEL org.label-schema.schema-version="1.0" \
     org.label-schema.vendor="theo546" \
     org.label-schema.url="https://github.com/theo546/docker-hytale-server" \
     org.label-schema.vcs-url="${VCS_URL}" \
-    org.label-schema.vcs-ref="${VCS_REF}" \
-    org.label-schema.docker.cmd=""
+    org.label-schema.vcs-ref="${VCS_REF}"
 
-# Set working directory to /server
+# Set working directory
 WORKDIR /server
 
 # Default environment variables
@@ -74,8 +92,8 @@ ENV HYTALE_BIND=0.0.0.0:5520 \
 # Expose UDP port
 EXPOSE 5520/udp
 
-# Set entrypoint
-ENTRYPOINT ["/app/entrypoint.sh"]
-
 # Run as hytale user
 USER hytale
+
+# Set entrypoint
+ENTRYPOINT ["/app/entrypoint.sh"]
